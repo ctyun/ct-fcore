@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: ct-fcore
+Version: 0.1.0
+Summary: a portal framework for ctcloud using tornado
+Home-page: https://github.com/astwyg/ct-fcore
+Author: astwyg
+Author-email: i@ysgh.net
+License: MIT License
+Description: UNKNOWN
+Keywords: django,ctcloud,portal,ct_fcore,chinatelecom
+Platform: any
