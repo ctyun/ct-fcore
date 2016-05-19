@@ -4,7 +4,7 @@ from config import appConfig
 import json, copy
 from tornado.gen import Task
 from tornado import gen
-from FCore.cache import cacheClient
+from cache import cacheClient
 
 client = AsyncClient()
 

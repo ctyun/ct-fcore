@@ -3,17 +3,17 @@
 基础模块, 扩展了 Tornado Web 服务器
 """
 import tornado.web
-from FCore.handler import BaseHandler, WsHandler
+from handler import BaseHandler, WsHandler
 import os, sys
 from importlib import import_module
 
 
 class Application(tornado.web.Application):
-    def __init__(self):
+    def __init__(self, file):
         handlers = None
         settings = dict(
-            template_path=os.path.join(os.path.dirname(__file__), "../templates"),
-            static_path=os.path.join(os.path.dirname(__file__), "../static"),
+            template_path=os.path.join(os.path.dirname(file), "templates"),
+            static_path=os.path.join(os.path.dirname(file), "static"),
             cookie_secret="itdoesnotreallymatter",
             xsrf_cookies=False,
             debug=True,

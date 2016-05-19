@@ -4,9 +4,9 @@ import time, json
 import tornadoredis
 import tornado.web
 from tornado import escape,gen,websocket
-from FCore.client import AsyncClient
-from FCore.cache import cacheClient
-from FCore.restApi import post
+from client import AsyncClient
+from cache import cacheClient
+from restApi import post
 from config.appConfig import redisServer, logServer
 import datetime, time
 

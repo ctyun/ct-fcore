@@ -12,7 +12,7 @@ from tornado.simple_httpclient import SimpleAsyncHTTPClient
 
 import time, json, copy, urllib
 
-from FCore.cache import cacheClient
+from cache import cacheClient
 
 
 class AsyncClient(SimpleAsyncHTTPClient, AsyncHTTPClient):
