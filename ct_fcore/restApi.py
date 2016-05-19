@@ -9,7 +9,7 @@ from cache import cacheClient
 client = AsyncClient()
 
 @gen.coroutine
-def post(url,body={},headers={},cache=None):
+def post(url,body={},headers={},cache=None, contentType="application/x-www-form-urlencoded"):
     kwstr = None
     if cacheClient and cache:
         kwcp = {}
@@ -29,7 +29,7 @@ def post(url,body={},headers={},cache=None):
     if "http" not in url:
         url = appConfig.restApiServer+url
     try:
-        headers["Content-Type"] = "application/x-www-form-urlencoded" #important!
+        headers["Content-Type"] = contentType #important!
         resp = yield client.fetch(url, headers, body, "POST",cache=cache)
     except Exception,e:
         resp={"error":str(e),"error_type":"fetch_error","url":url,"headers":headers,"body":body}
