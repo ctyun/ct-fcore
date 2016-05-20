@@ -26,6 +26,9 @@ class AsyncClient(SimpleAsyncHTTPClient, AsyncHTTPClient):
             raise RuntimeError("fetch() called on closed AsyncHTTPClient")
         future = TracebackFuture()
         if isinstance(body, dict):
+            for k,v in body.items():
+                if v is None:
+                    del body[k]
             body = urllib.urlencode(body)
         for k,v in headers.items(): #headers 只能接收str
             if v:
