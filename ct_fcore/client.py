@@ -17,7 +17,7 @@ from cache import cacheClient
 
 class AsyncClient(SimpleAsyncHTTPClient, AsyncHTTPClient):
 
-    def fetch(self, url, headers=None, body=None, method="GET", callback=None, raise_error=True, cache=None, **kwargs):
+    def fetch(self, url, headers=None, body=None, method="GET", callback=None, raise_error=True, cache=None, bodyFormat=None, **kwargs):
         headers = headers or {}
         body = body or "{}"
         """very simlar with AsyncHTTPClient.fetch
@@ -25,11 +25,14 @@ class AsyncClient(SimpleAsyncHTTPClient, AsyncHTTPClient):
         if self._closed:
             raise RuntimeError("fetch() called on closed AsyncHTTPClient")
         future = TracebackFuture()
-        if isinstance(body, dict):
-            for k,v in body.items():
-                if v is None:
-                    del body[k]
-            body = urllib.urlencode(body)
+        if bodyFormat == "json":
+            body = json.dumps(body)
+        elif bodyFormat == "dxts":
+            if isinstance(body, dict):
+                for k,v in body.items():
+                    if v is None:
+                        del body[k]
+                body = urllib.urlencode(body)
         for k,v in headers.items(): #headers 只能接收str
             if v:
                 headers[k] = str(headers[k])

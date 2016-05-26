@@ -9,7 +9,7 @@ from cache import cacheClient
 client = AsyncClient()
 
 @gen.coroutine
-def post(url,body={},headers={},cache=None, contentType="application/x-www-form-urlencoded"):
+def post(url,body={},headers={},cache=None, contentType="application/x-www-form-urlencoded", bodyFormat="dxts"):
     kwstr = None
     if cacheClient and cache:
         kwcp = {}
@@ -30,7 +30,7 @@ def post(url,body={},headers={},cache=None, contentType="application/x-www-form-
         url = appConfig.restApiServer+url
     try:
         headers["Content-Type"] = contentType #important!
-        resp = yield client.fetch(url, headers, body, "POST",cache=cache)
+        resp = yield client.fetch(url, headers, body, "POST",cache=cache, bodyFormat=bodyFormat)
     except Exception,e:
         resp={"error":str(e),"error_type":"fetch_error","url":url,"headers":headers,"body":body}
     if cacheClient and cache:
@@ -39,7 +39,7 @@ def post(url,body={},headers={},cache=None, contentType="application/x-www-form-
 
 
 @gen.coroutine
-def get(url,headers={},body={},cache=None):
+def get(url,headers={},body={},cache=None, bodyFormat="dxts"):
     kwstr = None
     if cacheClient and cache:
         kwcp = {}
@@ -59,7 +59,7 @@ def get(url,headers={},body={},cache=None):
     if "http" not in url:
         url = appConfig.restApiServer+url
     try:
-        resp = yield client.fetch(url, headers, body, "GET",cache=cache)
+        resp = yield client.fetch(url, headers, body, "GET",cache=cache, bodyFormat=bodyFormat)
     except Exception,e:
         resp={"error":str(e),"error_type":"fetch_error","url":url,"headers":headers,"body":body}
     if cacheClient and cache:
