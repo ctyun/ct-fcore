@@ -23,15 +23,15 @@ class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         return self.get_secure_cookie("userId")
 
-    # def prepare(self): # comment me for debug
-    #     allowURL = ["Login","login"]
-    #     for url in allowURL:
-    #         if url in self.request.path:
-    #             return
-    #     if not self.current_user:  # all api require login
-    #         self.redirect("/login")
-    #     else:
-    #         return
+    def prepare(self): # comment me for debug
+        allowURL = ["Login","login","h5page"]
+        for url in allowURL:
+            if url in self.request.path:
+                return
+        if not self.current_user:  # all api require login
+            self.redirect("/login")
+        else:
+            return
 
     def sendLog(self, message=""):
         post(logServer,{
