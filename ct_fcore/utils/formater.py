@@ -22,3 +22,15 @@ def timestamp2str(timestamp, formatstr="%Y-%m-%d %H:%M:%S"):
     :return: 时间和日期字符串
     '''
     return time.strftime(formatstr, time.localtime(timestamp))
+
+def jsdate2str(jsdate, fotmatstr="%Y-%m-%d", tz=8):
+    '''
+    将js的date对象转换成str
+    :param jsdate: jsdate对象直接json序列化的字符串
+    :param fotmatstr: 返回值的格式
+    :param tz: 时区, 默认为+08:00, 即东八区
+    :return: 时间字符串
+    '''
+    ts = datetime.datetime.strptime(jsdate.split(".")[0], "%Y-%m-%dT%H:%M:%S") + datetime.timedelta(hours=tz)
+    return ts.strftime(fotmatstr)
+
