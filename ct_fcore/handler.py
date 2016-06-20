@@ -61,6 +61,14 @@ class BaseHandler(tornado.web.RequestHandler):
             }
         return super(BaseHandler, self).write(chunk)
 
+    def write_raw(self, chunk):
+        """
+        不按照UCore方式包装返回值.
+        :param chunk:
+        :return:
+        """
+        return super(BaseHandler, self).write(chunk)
+
     # below is self use methods
     def getParams(self, theKey=None):
         body = json.loads(self.request.body)
