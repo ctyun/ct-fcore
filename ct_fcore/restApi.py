@@ -1,15 +1,16 @@
 # coding:utf-8
 from handler import AsyncClient
 from config import appConfig
-import json, copy
+import json, copy, logging
 from tornado.gen import Task
 from tornado import gen
 from cache import cacheClient
 
 client = AsyncClient()
+log = logging.getLogger("ct-fcore.rest_api")
 
 @gen.coroutine
-def post(url,body={},headers={},cache=None, contentType="application/x-www-form-urlencoded", bodyFormat="dxts"):
+def post(url,body={},headers={},cache=None, contentType="application/x-www-form-urlencoded"):
     kwstr = None
     if cacheClient and cache:
         kwcp = {}
@@ -30,16 +31,17 @@ def post(url,body={},headers={},cache=None, contentType="application/x-www-form-
         url = appConfig.restApiServer+url
     try:
         headers["Content-Type"] = contentType #important!
-        resp = yield client.fetch(url, headers, body, "POST",cache=cache, bodyFormat=bodyFormat)
+        resp = yield client.fetch(url, headers, body, "POST",cache=cache)
     except Exception,e:
         resp={"error":str(e),"error_type":"fetch_error","url":url,"headers":headers,"body":body}
+        log.error(resp)
     if cacheClient and cache:
         yield Task(cacheClient.set, kwstr, resp)
     raise gen.Return(resp)
 
 
 @gen.coroutine
-def get(url,headers={},body={},cache=None, bodyFormat="dxts"):
+def get(url,headers={},body={},cache=None):
     kwstr = None
     if cacheClient and cache:
         kwcp = {}
@@ -59,9 +61,10 @@ def get(url,headers={},body={},cache=None, bodyFormat="dxts"):
     if "http" not in url:
         url = appConfig.restApiServer+url
     try:
-        resp = yield client.fetch(url, headers, body, "GET",cache=cache, bodyFormat=bodyFormat)
+        resp = yield client.fetch(url, headers, body, "GET",cache=cache)
     except Exception,e:
         resp={"error":str(e),"error_type":"fetch_error","url":url,"headers":headers,"body":body}
+        log.error(resp)
     if cacheClient and cache:
         yield Task(cacheClient.set, kwstr, resp)
     raise gen.Return(resp)

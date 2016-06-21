@@ -10,14 +10,16 @@ from tornado import gen
 from tornado.httpclient import AsyncHTTPClient,HTTPRequest,_RequestProxy,HTTPResponse,HTTPError
 from tornado.simple_httpclient import SimpleAsyncHTTPClient
 
-import time, json, copy, urllib
+import time, json, copy, urllib, logging
 
 from cache import cacheClient
+
+log = logging.getLogger("ct-focre.client")
 
 
 class AsyncClient(SimpleAsyncHTTPClient, AsyncHTTPClient):
 
-    def fetch(self, url, headers=None, body=None, method="GET", callback=None, raise_error=True, cache=None, bodyFormat=None, **kwargs):
+    def fetch(self, url, headers=None, body=None, method="GET", callback=None, raise_error=True, cache=None, **kwargs):
         headers = headers or {}
         body = body or "{}"
         """very simlar with AsyncHTTPClient.fetch
@@ -25,14 +27,11 @@ class AsyncClient(SimpleAsyncHTTPClient, AsyncHTTPClient):
         if self._closed:
             raise RuntimeError("fetch() called on closed AsyncHTTPClient")
         future = TracebackFuture()
-        if bodyFormat == "json":
-            body = json.dumps(body)
-        elif bodyFormat == "dxts":
-            if isinstance(body, dict):
-                for k,v in body.items():
-                    if v is None:
-                        del body[k]
-                body = urllib.urlencode(body)
+        if isinstance(body, dict):
+            for k,v in body.items():
+                if v is None:
+                    del body[k]
+            body = urllib.urlencode(body)
         for k,v in headers.items(): #headers 只能接收str
             if v:
                 headers[k] = str(headers[k])
@@ -68,11 +67,12 @@ class AsyncClient(SimpleAsyncHTTPClient, AsyncHTTPClient):
                     resp = json.loads(str(response.body))
                     if resp.get("statusCode") and resp.get("statusCode")==800:
                         future.set_result(resp)
+                        log.info({"response":resp,"body":body,"headers":headers,"url":url})
                     else:
                         future.set_result({"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url})
+                        log.error({"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url})
                 except Exception,e:
-                    print (e)
                     future.set_result({"error_type":"json.loads failed!","error":str(e),"response.body":response.body,"body":body,"headers":headers,"url":url})
-
+                    log.error({"error_type":"json.loads failed!","error":str(e),"response.body":response.body,"body":body,"headers":headers,"url":url})
         self.fetch_impl(request, handle_response)
         return future
