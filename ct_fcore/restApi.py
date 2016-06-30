@@ -1,16 +1,18 @@
 # coding:utf-8
-from handler import AsyncClient
+from handler import AsyncClient as AsyncClientForUCcore
 from config import appConfig
 import json, copy, logging
 from tornado.gen import Task
 from tornado import gen
 from cache import cacheClient
+from tornado.httpclient import AsyncHTTPClient,HTTPRequest
 
-client = AsyncClient()
+client_ucore = AsyncClientForUCcore()
+client_normal = AsyncHTTPClient()
 log = logging.getLogger("ct-fcore.rest_api")
 
 @gen.coroutine
-def post(url,body={},headers={},cache=None, contentType="application/x-www-form-urlencoded"):
+def post(url,body={},headers={},cache=None, contentType=None, mode="ucore"):
     kwstr = None
     if cacheClient and cache:
         kwcp = {}
@@ -30,8 +32,22 @@ def post(url,body={},headers={},cache=None, contentType="application/x-www-form-
     if "http" not in url:
         url = appConfig.restApiServer+url
     try:
-        headers["Content-Type"] = contentType #important!
-        resp = yield client.fetch(url, headers, body, "POST",cache=cache)
+        if contentType:
+            headers["Content-Type"] = contentType
+        if mode == "ucore":
+            if not contentType:
+                headers["Content-Type"] = "application/x-www-form-urlencoded" #important!
+            resp = yield client_ucore.fetch(url, headers, body, "POST",cache=cache)
+        elif mode == "json":
+            headers["Content-Type"] = "application/json"
+            resp = yield client_normal.fetch(HTTPRequest(url=url,method="POST",headers=headers,body=json.dumps(body)))
+            resp = json.loads(resp.body)
+            log.info({"response":resp,"body":body,"headers":headers,"url":url,"method":"POST"})
+        elif mode == "normal":
+            resp = yield client_normal.fetch(HTTPRequest(url=url,method="POST",headers=headers,body=body))
+            log.info({"response":resp,"body":body,"headers":headers,"url":url,"method":"POST"})
+        else:
+            raise Exception(u"你传入了一个稀奇古怪的mode:{}".format(mode))
     except Exception,e:
         resp={"error":str(e),"error_type":"fetch_error","url":url,"headers":headers,"body":body}
         log.error(resp)
@@ -41,7 +57,7 @@ def post(url,body={},headers={},cache=None, contentType="application/x-www-form-
 
 
 @gen.coroutine
-def get(url,headers={},body={},cache=None):
+def get(url,headers={},body={},cache=None, mode="ucore"):
     kwstr = None
     if cacheClient and cache:
         kwcp = {}
@@ -61,11 +77,23 @@ def get(url,headers={},body={},cache=None):
     if "http" not in url:
         url = appConfig.restApiServer+url
     try:
-        resp = yield client.fetch(url, headers, body, "GET",cache=cache)
+        if mode == "ucore":
+            resp = yield client_ucore.fetch(url, headers, body, "GET",cache=cache)
+        elif mode == "json":
+            resp = yield client_normal.fetch(HTTPRequest(url=url,method="GET",headers=headers,body=json.dumps(body)))
+            resp = json.loads(resp.body)
+            log.info({"response":resp,"body":body,"headers":headers,"url":url,"method":"GET"})
+        elif mode == "normal":
+            resp = yield client_normal.fetch(HTTPRequest(url=url,method="GET",headers=headers,body=body))
+            log.info({"response":resp,"body":body,"headers":headers,"url":url,"method":"GET"})
+        else:
+            raise Exception(u"你传入了一个稀奇古怪的mode:{}".format(mode))
     except Exception,e:
         resp={"error":str(e),"error_type":"fetch_error","url":url,"headers":headers,"body":body}
         log.error(resp)
     if cacheClient and cache:
         yield Task(cacheClient.set, kwstr, resp)
     raise gen.Return(resp)
+
+
 
