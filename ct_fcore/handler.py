@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-import time, json
+import time, json, logging
 import tornadoredis
 import tornado.web
 from tornado import escape,gen,websocket
@@ -9,6 +9,8 @@ from cache import cacheClient
 from restApi import post
 from config.appConfig import redisServer, logServer
 import datetime, time
+
+log = logging.getLogger("ct-focre.handler")
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -53,12 +55,22 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header('Access-Control-Allow-Headers', '*')
         #self.set_header('Content-type', 'application/json') #此行导致中文乱码
 
-    def write(self, chunk):
+    def write(self, chunk, log_operate=False):
         if isinstance(chunk, list):
             chunk = {
                 "autoWrap":chunk,
                 "info":"this api is returning a list, FCore wrapped it cause most browser has bug with this action, mimiron2.Ajax will auto unwrap this object."
             }
+        if log_operate:
+            log.warning("{} - {} - {} - {} - {} - {} - {}".format(
+                self.current_user,
+                self.request.host,
+                self.request.path,
+                self.request.method,
+                self.getParams(),
+                chunk,
+                log_operate,
+            ))
         return super(BaseHandler, self).write(chunk)
 
     def write_raw(self, chunk):
