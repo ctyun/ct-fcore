@@ -67,12 +67,12 @@ class AsyncClient(SimpleAsyncHTTPClient, AsyncHTTPClient):
                     resp = json.loads(str(response.body))
                     if resp.get("statusCode") and resp.get("statusCode")==800:
                         future.set_result(resp)
-                        log.info({"response":resp,"body":body,"headers":headers,"url":url})
+                        log.info(json.dumps({"response":resp,"body":body,"headers":headers,"url":url}))
                     else:
                         future.set_result({"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url})
-                        log.error({"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url})
+                        log.error(json.dumps({"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url}))
                 except Exception,e:
                     future.set_result({"error_type":"json.loads failed!","error":str(e),"response.body":response.body,"body":body,"headers":headers,"url":url})
-                    log.error({"error_type":"json.loads failed!","error":str(e),"response.body":response.body,"body":body,"headers":headers,"url":url})
+                    log.error(json.dumps({"error_type":"json.loads failed!","error":str(e),"response.body":response.body,"body":body,"headers":headers,"url":url}))
         self.fetch_impl(request, handle_response)
         return future

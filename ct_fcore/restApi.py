@@ -41,16 +41,19 @@ def post(url,body={},headers={},cache=None, contentType=None, mode="ucore"):
         elif mode == "json":
             headers["Content-Type"] = "application/json"
             resp = yield client_normal.fetch(HTTPRequest(url=url,method="POST",headers=headers,body=json.dumps(body)))
-            resp = json.loads(resp.body)
-            log.info({"response":resp,"body":body,"headers":headers,"url":url,"method":"POST"})
+            log.info(json.dumps({"response":resp.body,"body":json.dumps(body),"headers":headers,"url":url,"method":"POST"}))
+            try:
+                resp = json.loads(resp.body)
+            except UnicodeDecodeError:
+                resp = json.loads(resp.body, encoding="gb2312")
         elif mode == "normal":
             resp = yield client_normal.fetch(HTTPRequest(url=url,method="POST",headers=headers,body=body))
-            log.info({"response":resp,"body":body,"headers":headers,"url":url,"method":"POST"})
+            log.info(json.dumps({"response":resp,"body":body,"headers":headers,"url":url,"method":"POST"}))
         else:
             raise Exception(u"你传入了一个稀奇古怪的mode:{}".format(mode))
     except Exception,e:
         resp={"error":str(e),"error_type":"fetch_error","url":url,"headers":headers,"body":body}
-        log.error(resp)
+        log.error(json.dumps(resp))
     if cacheClient and cache:
         yield Task(cacheClient.set, kwstr, resp)
     raise gen.Return(resp)
@@ -82,15 +85,15 @@ def get(url,headers={},body={},cache=None, mode="ucore"):
         elif mode == "json":
             resp = yield client_normal.fetch(HTTPRequest(url=url,method="GET",headers=headers,body=json.dumps(body)))
             resp = json.loads(resp.body)
-            log.info({"response":resp,"body":body,"headers":headers,"url":url,"method":"GET"})
+            log.info(json.dumps({"response":resp,"body":body,"headers":headers,"url":url,"method":"GET"}))
         elif mode == "normal":
             resp = yield client_normal.fetch(HTTPRequest(url=url,method="GET",headers=headers,body=body))
-            log.info({"response":resp,"body":body,"headers":headers,"url":url,"method":"GET"})
+            log.info(json.dumps({"response":resp,"body":body,"headers":headers,"url":url,"method":"GET"}))
         else:
             raise Exception(u"你传入了一个稀奇古怪的mode:{}".format(mode))
     except Exception,e:
         resp={"error":str(e),"error_type":"fetch_error","url":url,"headers":headers,"body":body}
-        log.error(resp)
+        log.error(json.dumps(resp))
     if cacheClient and cache:
         yield Task(cacheClient.set, kwstr, resp)
     raise gen.Return(resp)

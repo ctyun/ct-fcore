@@ -4,9 +4,10 @@
 """
 import tornado.web
 from handler import BaseHandler, WsHandler
-import os, sys
+import os, sys, logging
 from importlib import import_module
 
+logger = logging.getLogger("ct-core.app")
 
 class Application(tornado.web.Application):
     def __init__(self, file):
@@ -83,3 +84,4 @@ def route(url_pattern):
         cls.url_pattern = url_pattern
         return cls
     return handler_wapper
+
