@@ -46,40 +46,41 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
                     headers[k] = str(headers[k])
                 else:
                     del headers[k]
-            # 收拾body
-            if not isinstance(body, dict):
-                body = json.loads(body)
             # 获取数据权限
-            if access.get("userId") and access.get("role"):
-                filter = yield post(appConfig.accessUri,{
-                    "url":url,
-                    "userId":access.get("userId"),
-                    "role":access.get("role")
-                }, mode="json")
+            if access and type(access) == dict:
+                access["url"] = url.replace(appConfig.restApiServer,"")
+                filter = yield post(appConfig.accessUri,access, mode="json")
                 body = dict(filter, **body)
-            for k,v in body.items():
-                if v is None:
-                    del body[k]
-            body = urllib.urlencode(body)
+            # 收拾body
+            if isinstance(body, dict):
+                for k,v in body.items():
+                    if v is None:
+                        del body[k]
+                body = urllib.urlencode(body)
             resp = yield client.fetch(HTTPRequest(url=url,method="POST",headers=headers,body=body))
             try:
                 resp = json.loads(str(resp.body))
                 if resp.get("statusCode") and resp.get("statusCode")!=800:
                     resp = {"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url}
-                    log.error(json.dumps({"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url}))
+                    log.error(json.dumps({"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url},  ensure_ascii=False))
+                else:
+                    try:
+                        log.info(json.dumps({"response":resp,"body":body,"headers":headers,"url":url,"method":"POST"}, ensure_ascii=False))
+                    except UnicodeDecodeError:
+                        log.info(json.dumps({"response":resp,"body":"--passed--","headers":headers,"url":url,"method":"POST"}, ensure_ascii=False))
             except Exception,e:
-                resp = ({"error_type":"json.loads failed!","error":str(e),"response.body":resp.get("body"),"body":body,"headers":headers,"url":url})
-                log.error(json.dumps({"error_type":"json.loads failed!","error":str(e),"response.body":resp.get("body"),"body":body,"headers":headers,"url":url}))
+                resp = ({"error_type":"json.loads failed!","error":str(e),"response":resp,"body":body,"headers":headers,"url":url})
+                log.error(json.dumps(resp))
         elif mode == "json":
             headers["Content-Type"] = "application/json"
             # 获取数据权限
-            if access.get("userId") and access.get("role"):
-                filter = yield post(appConfig.accessUri,{
-                    "url":url,
-                    "userId":access.get("userId"),
-                    "role":access.get("role")
-                }, mode="json")
+            if access and type(access) == dict:
+                access["url"] = url.replace(appConfig.restApiServer,"")
+                filter = yield post(appConfig.accessUri,access, mode="json")
                 body = dict(filter, **body)
+                for k,v in body.items():
+                    if v is None or v == "" or v == []:
+                        body.pop(k)
             resp = yield client.fetch(HTTPRequest(url=url,method="POST",headers=headers,body=json.dumps(body)))
             log.info(json.dumps({"response":resp.body,"body":json.dumps(body),"headers":headers,"url":url,"method":"POST"}))
             try:
@@ -88,12 +89,15 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
                 resp = json.loads(resp.body, encoding="gb2312")
         elif mode == "normal":
             resp = yield client.fetch(HTTPRequest(url=url,method="POST",headers=headers,body=body))
-            log.info(json.dumps({"response":resp,"body":body,"headers":headers,"url":url,"method":"POST"}))
+            log.info(json.dumps({"response":resp.body,"body":body,"headers":headers,"url":url,"method":"POST"}))
         else:
             raise Exception(u"你传入了一个稀奇古怪的mode:{}".format(mode))
     except Exception,e:
         resp={"error":str(e),"error_type":"fetch_error","url":url,"headers":headers,"body":body}
-        log.error(json.dumps(resp))
+        try:
+            log.error(json.dumps(resp))
+        except UnicodeDecodeError:
+            log.info(json.dumps({"response":resp,"body":"--passed--","headers":headers,"url":url,"method":"POST"}, ensure_ascii=False))
     if cacheClient and cache:
         yield Task(cacheClient.set, kwstr, resp)
     raise gen.Return(resp)
@@ -101,7 +105,6 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
 
 @gen.coroutine
 def get(url,headers=None,body=None,cache=None, mode="ucore", access=None):
-    if body is None: body={}
     if headers is None: headers={}
     if access is None: access={}
     kwstr = None
@@ -132,8 +135,17 @@ def get(url,headers=None,body=None,cache=None, mode="ucore", access=None):
                     "userId":access.get("userId"),
                     "role":access.get("role")
                 }, mode="json")
-                body = dict(filter, **body)
+                if body:
+                    body = dict(filter, **body)
             resp = yield client.fetch(HTTPRequest(url=url,method="GET",headers=headers,body=body))
+            try:
+                resp = json.loads(str(resp.body))
+                if resp.get("statusCode") and resp.get("statusCode")!=800:
+                    resp = {"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url}
+                    log.error(json.dumps({"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url}))
+            except Exception,e:
+                resp = ({"error_type":"json.loads failed!","error":str(e),"response.body":resp,"body":body,"headers":headers,"url":url})
+                log.error(json.dumps(resp))
         elif mode == "json":
             # 获取数据权限
             if access.get("userId") and access.get("role"):
