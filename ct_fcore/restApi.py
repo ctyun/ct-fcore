@@ -61,7 +61,6 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
             try:
                 resp = json.loads(str(resp.body))
                 if resp.get("statusCode") and resp.get("statusCode")!=800:
-                    resp = {"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url}
                     log.error(json.dumps({"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url},  ensure_ascii=False))
                 else:
                     try:
@@ -141,7 +140,6 @@ def get(url,headers=None,body=None,cache=None, mode="ucore", access=None):
             try:
                 resp = json.loads(str(resp.body))
                 if resp.get("statusCode") and resp.get("statusCode")!=800:
-                    resp = {"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url}
                     log.error(json.dumps({"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url}))
             except Exception,e:
                 resp = ({"error_type":"json.loads failed!","error":str(e),"response.body":resp,"body":body,"headers":headers,"url":url})
