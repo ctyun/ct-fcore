@@ -62,7 +62,7 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
                 resp = json.loads(str(resp.body))
                 if resp.get("statusCode") and resp.get("statusCode")!=800:
                     resp = {"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url}
-                    log.error(json.dumps({"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url,"method":"POST"},  ensure_ascii=False))
+                    log.error(json.dumps(dict({"method":"POST"}, **resp),  ensure_ascii=False))
                 else:
                     try:
                         log.info(json.dumps({"response":resp,"body":body,"headers":headers,"url":url,"method":"POST"}, ensure_ascii=False))
@@ -142,9 +142,9 @@ def get(url,headers=None,body=None,cache=None, mode="ucore", access=None):
                 resp = json.loads(str(resp.body))
                 if resp.get("statusCode") and resp.get("statusCode")!=800:
                     resp = {"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url}
-                    log.error(json.dumps({"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url}))
+                    log.error(json.dumps(dict({"method": "GET"}, **resp), ensure_ascii=False))
             except Exception,e:
-                resp = {"error_type":"json.loads failed!","error":str(e),"response.body":resp,"body":body,"headers":headers,"url":url}
+                resp = {"error_type":"json.loads failed!","error":str(e),"response.body":resp,"body":body,"headers":headers,"url":url, "method":"GET"}
                 log.error(json.dumps(resp))
         elif mode == "json":
             # 获取数据权限
