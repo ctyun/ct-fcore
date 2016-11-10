@@ -144,7 +144,7 @@ def get(url,headers=None,body=None,cache=None, mode="ucore", access=None):
                     resp = {"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url}
                     log.error(json.dumps({"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url}))
             except Exception,e:
-                resp = ({"error_type":"json.loads failed!","error":str(e),"response.body":resp,"body":body,"headers":headers,"url":url})
+                resp = {"error_type":"json.loads failed!","error":str(e),"response.body":resp,"body":body,"headers":headers,"url":url}
                 log.error(json.dumps(resp))
         elif mode == "json":
             # 获取数据权限
@@ -164,7 +164,7 @@ def get(url,headers=None,body=None,cache=None, mode="ucore", access=None):
         else:
             raise Exception(u"你传入了一个稀奇古怪的mode:{}".format(mode))
     except Exception,e:
-        resp={"error":str(e),"error_type":"fetch_error","url":url,"headers":headers,"body":body}
+        resp={"error":str(e),"error_type":"fetch_error","url":url,"headers":headers,"body":body, "method":"GET"}
         log.error(json.dumps(resp))
     if cacheClient and cache:
         yield Task(cacheClient.set, kwstr, resp)
