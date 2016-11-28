@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: ct-fcore
-Version: 0.1.20
+Version: 0.1.21
 Summary: a portal framework for ctcloud using tornado
 Home-page: https://github.com/astwyg/ct-fcore
 Author: astwyg

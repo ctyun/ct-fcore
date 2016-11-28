@@ -78,9 +78,11 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
                 access["url"] = url.replace(appConfig.restApiServer,"")
                 filter = yield post(appConfig.accessUri,access, mode="json")
                 body = dict(filter, **body)
-            for k,v in body.items():
-                if v is None or v == "" or v == []:
-                    body.pop(k)
+            # 收拾body
+            if isinstance(body, dict):
+                for k,v in body.items():
+                    if v is None or v == "" or v == []:
+                        body.pop(k)
             resp = yield client.fetch(HTTPRequest(url=url,method="POST",headers=headers,body=json.dumps(body)))
             log.info(json.dumps({"response":resp.body,"body":json.dumps(body),"headers":headers,"url":url,"method":"POST"}))
             try:
