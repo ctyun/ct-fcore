@@ -5,7 +5,7 @@ from tornado.gen import Task
 from tornado import gen
 from cache import cacheClient
 from tornado.httpclient import AsyncHTTPClient,HTTPRequest
-import urllib
+import urllib, sys, traceback
 
 client = AsyncHTTPClient()
 log = logging.getLogger("ct-fcore.rest_api")
@@ -49,7 +49,7 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
             for k,v in headers.items(): #headers 只能接收str
                 if v:
                     headers[k] = str(headers[k])
-                elif v == "":
+                elif v == "" or v is None:
                     del headers[k]
             # 收拾body
             if isinstance(body, dict):
@@ -87,14 +87,13 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
             log.info(json.dumps({"response":resp.body,"body":body,"headers":headers,"url":url,"method":"POST"}))
         else:
             raise Exception(u"你传入了一个稀奇古怪的mode:{}".format(mode))
-    except UnicodeDecodeError,e:
-        if not "resp" in locals().keys():
-            resp = "Empty"
-        log.info(json.dumps({"response": resp, "body": "--passed--", "headers": headers, "url": url, "method": "POST"},
-                            ensure_ascii=False))
     except Exception,e:
         resp={"error":str(e),"error_type":"fetch_error","url":url,"headers":headers,"body":body,"method":"POST"}
-        log.error(json.dumps(resp))
+        try:
+            log.error(json.dumps(resp))
+        except UnicodeDecodeError,e:
+            resp["body"] = "--passed--"
+            log.error(json.dumps(resp))
     if cacheClient and cache:
         yield Task(cacheClient.set, kwstr, resp)
     raise gen.Return(resp)
