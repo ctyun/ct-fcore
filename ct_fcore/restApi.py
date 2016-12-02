@@ -42,15 +42,16 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
             access["url"] = url.replace(appConfig.restApiServer, "")
             filter = yield post(appConfig.accessUri, access, mode="json")
             body = dict(body, **filter)
+        # 收拾headers
+        for k, v in headers.items():  # headers 只能接收str
+            if v:
+                headers[k] = str(headers[k])
+            elif v == "" or v is None:
+                del headers[k]
         if mode == "ucore":
             # 收拾headers
             if not contentType:
                 headers["Content-Type"] = "application/x-www-form-urlencoded"
-            for k,v in headers.items(): #headers 只能接收str
-                if v:
-                    headers[k] = str(headers[k])
-                elif v == "" or v is None:
-                    del headers[k]
             # 收拾body
             if isinstance(body, dict):
                 for k,v in body.items():
@@ -122,6 +123,12 @@ def get(url,headers=None,body=None,cache=None, mode="ucore", access=None):
             raise gen.Return(resp)
     if "http" not in url:
         url = appConfig.restApiServer+url
+    # 收拾headers
+    for k, v in headers.items():  # headers 只能接收str
+        if v:
+            headers[k] = str(headers[k])
+        elif v == "" or v is None:
+            del headers[k]
     try:
         if mode == "ucore":
             # 获取数据权限
@@ -151,7 +158,9 @@ def get(url,headers=None,body=None,cache=None, mode="ucore", access=None):
                     "role":access.get("role")
                 }, mode="json")
                 body = dict(filter, **body)
-            resp = yield client.fetch(HTTPRequest(url=url,method="GET",headers=headers,body=json.dumps(body)))
+            if body:
+                body = json.dumps(body)
+            resp = yield client.fetch(HTTPRequest(url=url,method="GET",headers=headers,body=body))
             resp = json.loads(resp.body)
             log.info(json.dumps({"response":resp,"body":body,"headers":headers,"url":url,"method":"GET"}))
         elif mode == "normal":
