@@ -78,11 +78,11 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
                 if v is None or v == "" or v == []:
                     body.pop(k)
             resp = yield client.fetch(HTTPRequest(url=url,method="POST",headers=headers,body=json.dumps(body)))
-            log.info(json.dumps({"response":resp.body,"body":json.dumps(body),"headers":headers,"url":url,"method":"POST"}))
             try:
                 resp = json.loads(resp.body)
             except UnicodeDecodeError:
                 resp = json.loads(resp.body, encoding="gb2312")
+            log.info(json.dumps({"response": resp, "body": body, "headers": headers, "url": url, "method": "POST"}))
         elif mode == "normal":
             resp = yield client.fetch(HTTPRequest(url=url,method="POST",headers=headers,body=body))
             log.info(json.dumps({"response":resp.body,"body":body,"headers":headers,"url":url,"method":"POST"}))
