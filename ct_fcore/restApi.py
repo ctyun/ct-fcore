@@ -96,7 +96,7 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
             resp["body"] = "--passed--"
             log.error(json.dumps(resp))
     if cacheClient and cache:
-        yield Task(cacheClient.set, kwstr, resp)
+        yield Task(cacheClient.set, kwstr, resp, cache)
     raise gen.Return(resp)
 
 
@@ -172,7 +172,7 @@ def get(url,headers=None,body=None,cache=None, mode="ucore", access=None):
         resp={"error":str(e),"error_type":"fetch_error","url":url,"headers":headers,"body":body}
         log.error(json.dumps(resp))
     if cacheClient and cache:
-        yield Task(cacheClient.set, kwstr, resp)
+        yield Task(cacheClient.set, kwstr, resp, cache)
     raise gen.Return(resp)
 
 
