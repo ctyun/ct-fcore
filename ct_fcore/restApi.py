@@ -142,7 +142,7 @@ def get(url,headers=None,body=None,cache=None, mode="ucore", access=None):
                 filter = yield post(appConfig.accessUri,{
                     "url":url,
                     "userId":access.get("userId"),
-                    "role":access.get("role")
+                    "roleId":access.get("roleId")
                 }, mode="json")
                 if body:
                     body = dict(filter, **body)
@@ -161,7 +161,7 @@ def get(url,headers=None,body=None,cache=None, mode="ucore", access=None):
                 filter = yield post(appConfig.accessUri,{
                     "url":url,
                     "userId":access.get("userId"),
-                    "role":access.get("role")
+                    "roleId":access.get("roleId")
                 }, mode="json")
                 body = dict(filter, **body)
             if body:
