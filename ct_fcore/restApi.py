@@ -37,11 +37,6 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
     try:
         if contentType:
             headers["Content-Type"] = contentType
-        # 获取数据权限
-        if access and type(access) == dict:
-            access["url"] = url.replace(appConfig.restApiServer, "")
-            filter = yield post(appConfig.accessUri, access, mode="json")
-            body = dict(body, **filter)
         # 收拾headers
         for k, v in headers.items():  # headers 只能接收str
             if v:
@@ -57,6 +52,11 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
                 for k,v in body.items():
                     if v is None:
                         del body[k]
+                # 获取数据权限
+                if access and type(access) == dict:
+                    access["url"] = url.replace(appConfig.restApiServer, "")
+                    filter = yield post(appConfig.accessUri, access, mode="json")
+                    body = dict(filter, **body)
                 body = urllib.urlencode(body)
             resp = yield client.fetch(HTTPRequest(url=url,method="POST",headers=headers,body=body))
             try:
@@ -74,9 +74,15 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
                 log.error(json.dumps(resp))
         elif mode == "json":
             headers["Content-Type"] = "application/json"
+            # 收拾body
             for k, v in body.items():
                 if v is None or v == "" or v == []:
                     body.pop(k)
+            # 获取数据权限 注意, 这里必须在处理body之后进行, 且需要body参数覆盖filter参数.
+            if access and type(access) == dict:
+                access["url"] = url.replace(appConfig.restApiServer, "")
+                filter = yield post(appConfig.accessUri, access, mode="json")
+                body = dict(filter, **body)
             resp = yield client.fetch(HTTPRequest(url=url,method="POST",headers=headers,body=json.dumps(body)))
             try:
                 resp = json.loads(resp.body)
