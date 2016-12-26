@@ -7,11 +7,12 @@ from cache import cacheClient
 from tornado.httpclient import AsyncHTTPClient,HTTPRequest
 import urllib
 
-client = AsyncHTTPClient()
+
 log = logging.getLogger("ct-fcore.rest_api")
 
 @gen.coroutine
 def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", access=None):
+    client = AsyncHTTPClient()
     if body is None: body={}
     if headers is None: headers={}
     if access is None: access={}
@@ -107,6 +108,7 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
 
 @gen.coroutine
 def get(url,headers=None,body=None,cache=None, mode="ucore", access=None):
+    client = AsyncHTTPClient()
     if headers is None: headers={}
     if access is None: access={}
     if body == {}: body = None # get方法如果传入{}作为body会报错.

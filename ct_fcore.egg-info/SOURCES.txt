@@ -8,7 +8,6 @@ ct_fcore/restApi.py
 ct_fcore.egg-info/PKG-INFO
 ct_fcore.egg-info/SOURCES.txt
 ct_fcore.egg-info/dependency_links.txt
-ct_fcore.egg-info/requires.txt
 ct_fcore.egg-info/top_level.txt
 ct_fcore/utils/__init__.py
 ct_fcore/utils/excel.py
