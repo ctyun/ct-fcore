@@ -10,14 +10,15 @@ from importlib import import_module
 logger = logging.getLogger("ct-core.app")
 
 class Application(tornado.web.Application):
-    def __init__(self, file):
+    def __init__(self, file, debug=True, autoreload=True):
         handlers = None
         settings = dict(
             template_path=os.path.join(os.path.dirname(file), "templates"),
             static_path=os.path.join(os.path.dirname(file), "static"),
             cookie_secret="itdoesnotreallymatter",
             xsrf_cookies=False,
-            debug=True,
+            debug=debug,
+            autoreload=autoreload
         )
         super(Application, self).__init__(handlers, **settings)
     """
