@@ -148,6 +148,11 @@ def get(url,headers=None,body=None,cache=None, mode="ucore", access=None):
                 if resp.get("statusCode") and resp.get("statusCode")!=800:
                     resp = {"error_type":"statusCode is not 800", "response":resp,"body":body,"headers":headers,"url":url}
                     log.error(json.dumps(dict({"method": "GET"}, **resp), ensure_ascii=False))
+                else:
+                    try:
+                        log.info(json.dumps({"response":resp,"body":body,"headers":headers,"url":url,"method":"POST"}, ensure_ascii=False))
+                    except UnicodeDecodeError:
+                        log.info(json.dumps({"response":resp,"body":"--passed--","headers":headers,"url":url,"method":"POST"}, ensure_ascii=False))
             except Exception,e:
                 resp = {"error_type":"json.loads failed!","error":str(e),"response.body":resp,"body":body,"headers":headers,"url":url, "method":"GET"}
                 log.error(json.dumps(resp))
