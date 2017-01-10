@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'ct_fcore',
-    version = '0.1.34',
+    version = '0.1.35',
     keywords = ('django', 'ctcloud', 'portal', 'ct_fcore', 'chinatelecom'),
     description = 'a portal framework for ctcloud using tornado',
     license = 'MIT License',
