@@ -74,9 +74,10 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
                 log.error(json.dumps(resp))
         elif mode == "json":
             headers["Content-Type"] = "application/json"
-            for k, v in body.items():
-                if v is None or v == "" or v == []:
-                    body.pop(k)
+            if isinstance(body, dict):
+                for k, v in body.items():
+                    if v is None or v == "" or v == []:
+                        body.pop(k)
             resp = yield client.fetch(HTTPRequest(url=url,method="POST",headers=headers,body=json.dumps(body)))
             try:
                 resp = json.loads(resp.body)
