@@ -10,6 +10,22 @@ import urllib, sys, traceback
 client = AsyncHTTPClient()
 log = logging.getLogger("ct-fcore.rest_api")
 
+def skip_body_check(url, k):
+    '''
+    由于计费系统某些接口没有遵守我们的接口规范, 所以只能这样凑活一下
+    :param url: 接口的url
+    :param k: 接口的参数名称
+    :return: 是否跳过检查
+    '''
+    skip_list = [
+        ("/bill/accountusagequery","serviceTag",),
+    ]
+    for skip_pair in skip_list:
+        if url.endswith(skip_pair[0]) and k == skip_pair[1]:
+            return True
+    return False
+
+
 @gen.coroutine
 def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", access=None):
     if body is None: body={}
@@ -77,7 +93,8 @@ def post(url,body=None,headers=None,cache=None, contentType=None, mode="ucore", 
             if isinstance(body, dict):
                 for k, v in body.items():
                     if v is None or v == "" or v == []:
-                        body.pop(k)
+                        if not skip_body_check(url, k):
+                            body.pop(k)
             resp = yield client.fetch(HTTPRequest(url=url,method="POST",headers=headers,body=json.dumps(body)))
             try:
                 resp = json.loads(resp.body)
